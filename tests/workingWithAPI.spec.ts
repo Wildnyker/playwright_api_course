@@ -86,11 +86,64 @@ test('delete article', async ({page, request})=>{
   
   expect(articleRsponse.status()).toEqual(201)
 
+  //deleting the article via UI
+
   await page.getByText('Global Feed').click()
   const createdArticleTitle = await page.getByText('testis').click()
   await page.getByRole('button', ({name:"Delete Article"})).first().click()
 
   await expect (page.getByText('testis')).toBeHidden()
 
+
+})
+
+
+test('create article via ui and delete via API', async ({page, request})=>{
+  
+
+  //creating a post via UI
+
+  await page.getByText("New Article").click()
+  await page.getByPlaceholder('Article Title').fill("easy")
+  await page.getByPlaceholder("What's this article about?").fill("playwright")
+  await page.getByPlaceholder('Write your article (in markdown)').fill("automation")
+  await page.getByRole('button',{name:"Publish Article"}).click()
+
+
+  
+  //getting articles response & extracting slug(unique element) from it
+  const articleResponse = await page.waitForResponse('https://conduit-api.bondaracademy.com/api/articles/')
+  const articleResponseBody = await articleResponse.json()
+  const slugID = articleResponseBody.article.slug
+
+  //verifying that post was created
+  await expect(page.locator('.article-page h1')).toContainText('easy')
+  await page.getByText('Home').click()
+  await page.getByText('Global Feed').click()
+  await expect(page.locator('app-article-list h1').first()).toContainText('easy')
+
+
+  //getting access token
+  const response = await request.post('https://conduit-api.bondaracademy.com/api/users/login',{
+    //data is request body
+    data:{
+      "user":{"email":"wild99@test.com","password":"wild99"}
+    }
+    
+  })
+  
+  //saving response as json
+  const responseBody = await response.json()
+  //storing token
+  const accessToken = responseBody.user.token
+
+
+  //triggering deletion api endpoint
+  const deleteResponse = await request.delete(`https://conduit-api.bondaracademy.com/api/articles/${slugID}`, {
+    headers:{
+      Authorization:`Token ${accessToken}`
+    }
+  })
+  expect(deleteResponse.status()).toEqual(204)
 
 })

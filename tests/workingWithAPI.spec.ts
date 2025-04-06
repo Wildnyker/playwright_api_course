@@ -19,6 +19,11 @@ test.beforeEach(async ({page})=>{
   await page.goto('https://conduit.bondaracademy.com/')
   // Wait briefly to allow the page and mocked API data to load/render
   await page.waitForTimeout(500)
+
+  await page.getByText('Sign in').click()
+  await page.getByRole('textbox',{name:'Email'}).fill('wild99@test.com')
+  await page.getByRole('textbox',{name:'Password'}).fill('wild99')
+  await page.getByRole('button', {name:' Sign in '}).click()
 })
 
 test('has title', async ({ page }) => {
@@ -45,6 +50,7 @@ test('has title', async ({ page }) => {
   expect (page.locator('app-article-list h1').first()).toContainText("This is a test title")
   expect (page.locator('app-article-list p').first()).toContainText("This is me mocking the description")
   await page.waitForTimeout(1000)
+  
 });
 
 
@@ -57,12 +63,34 @@ test('delete article', async ({page, request})=>{
     data:{
       "user":{"email":"wild99@test.com","password":"wild99"}
     }
+    
   })
+  
   //saving response as json
   const responseBody = await response.json()
   //storing token
   const accessToken = responseBody.user.token
   //console.log(responseBody.user.token)
 
-})
+  //making a request, passind data(bopy) + headers(token)
+  const articleRsponse = await request.post('https://conduit-api.bondaracademy.com/api/articles/', {
+    data:{
+      "article":{"title":"testis","description":"my","body":"manipulation","tagList":[]}
+    },
+    headers:{
+      Authorization:`Token ${accessToken}`
+    }
+  })
 
+  //checking response code
+  
+  expect(articleRsponse.status()).toEqual(201)
+
+  await page.getByText('Global Feed').click()
+  const createdArticleTitle = await page.getByText('testis').click()
+  await page.getByRole('button', ({name:"Delete Article"})).first().click()
+
+  await expect (page.getByText('testis')).toBeHidden()
+
+
+})

@@ -51,14 +51,30 @@ test('has title', async ({ page }) => {
 
 //added request to read it within a test
 test('delete article', async ({page, request})=>{
-
+  //makinf api request
+  // it should be exported from @playwright/test
+  const response = await request.post('https://conduit-api.bondaracademy.com/api/users/login',{
+    //data is request body
+    data:{
+      "user":{"email":"wild99@test.com","password":"wild99"}
+    }
+    
+  })
+  
+  //saving response as json
+  const responseBody = await response.json()
+  //storing token
+  const accessToken = responseBody.user.token
+  //console.log(responseBody.user.token)
 
   //making a request, passind data(bopy) + headers(token)
   const articleRsponse = await request.post('https://conduit-api.bondaracademy.com/api/articles/', {
     data:{
       "article":{"title":"testis","description":"my","body":"manipulation","tagList":[]}
+    },
+    headers:{
+      Authorization:`Token ${accessToken}`
     }
-
   })
 
   //checking response code
@@ -101,8 +117,28 @@ test('create article via ui and delete via API', async ({page, request})=>{
   await page.getByText('Global Feed').click()
   await expect(page.locator('app-article-list h1').first()).toContainText('easy')
 
+
+  //getting access token
+  const response = await request.post('https://conduit-api.bondaracademy.com/api/users/login',{
+    //data is request body
+    data:{
+      "user":{"email":"wild99@test.com","password":"wild99"}
+    }
+    
+  })
+  
+  //saving response as json
+  const responseBody = await response.json()
+  //storing token
+  const accessToken = responseBody.user.token
+
+
   //triggering deletion api endpoint
-  const deleteResponse = await request.delete(`https://conduit-api.bondaracademy.com/api/articles/${slugID}`)
+  const deleteResponse = await request.delete(`https://conduit-api.bondaracademy.com/api/articles/${slugID}`, {
+    headers:{
+      Authorization:`Token ${accessToken}`
+    }
+  })
   expect(deleteResponse.status()).toEqual(204)
 
 })

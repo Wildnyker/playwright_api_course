@@ -14,7 +14,7 @@ const authFile = '.auth/user.json'
 setup('store auth via api', async ({ request }) => {
 
   // Send a login request directly to the backend API with known user credentials
-  const response = await request.post('https://conduit-api.bondaracademy.com/api/users/login', {
+  const response = await request.post('https://conduitapi.bondaracademy.com/api/users/login', {
     data: {
       user: {
         email: 'wild99@test.com',
@@ -44,19 +44,18 @@ setup('store auth via api', async ({ request }) => {
 // and then saved the authenticated storage state to a file for reuse.
 // It's commented out because you're now doing it via the API (which is better for speed and stability).
 
-/*
-setup('store auth via ui', async ({ page }) => {
-  await page.goto('https://conduit.bondaracademy.com/')
-  await page.waitForTimeout(500)
 
-  await page.getByText('Sign in').click()
-  await page.getByRole('textbox', { name: 'Email' }).fill('wild99@test.com')
-  await page.getByRole('textbox', { name: 'Password' }).fill('wild99')
-  await page.getByRole('button', { name: ' Sign in ' }).click()
+// setup('store auth via ui', async ({ page }) => {
+//   await page.goto('https://conduit.bondaracademy.com/')
+//   await page.waitForTimeout(500)
 
-  await page.waitForResponse("https://conduit-api.bondaracademy.com/api/tags")
-  await page.waitForTimeout(1000)
+//   await page.getByText('Sign in').click()
+//   await page.getByRole('textbox', { name: 'Email' }).fill('wild99@test.com')
+//   await page.getByRole('textbox', { name: 'Password' }).fill('wild99')
+//   await page.getByRole('button', { name: ' Sign in ' }).click()
 
-  await page.context().storageState({ path: authFile })
-})
-*/
+//   await page.waitForResponse("https://conduit-api.bondaracademy.com/api/tags")
+//   await page.waitForTimeout(1000)
+
+//   await page.context().storageState({ path: authFile })
+// })
